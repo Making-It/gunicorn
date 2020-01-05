@@ -23,6 +23,7 @@ class Arbiter(object):
     Arbiter maintain the workers processes alive. It launches or
     kills them if needed. It also manages application reloading
     via SIGHUP/USR2.
+	类Arbiter实现了 gunicorn 管理进程的主要逻辑
     """
 
     # A flag indicating if a worker failed to
@@ -193,6 +194,7 @@ class Arbiter(object):
             self.SIG_QUEUE.append(sig)
             self.wakeup()
 
+	# 入口函数run()
     def run(self):
         "Main master loop."
         self.start()
