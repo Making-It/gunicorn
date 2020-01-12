@@ -117,7 +117,7 @@ class Arbiter(object):
         self.init_signals()
         if not self.LISTENER:
             self.LISTENER = create_socket(self.cfg, self.log)
-        
+        # 创建当前管理进程的pid文件
         if self.cfg.pidfile is not None:
             self.pidfile = Pidfile(self.cfg.pidfile)
             self.pidfile.create(self.pid)
@@ -154,11 +154,13 @@ class Arbiter(object):
         "Main master loop."
         self.start()
         util._setproctitle("master [%s]" % self.proc_name)
-        
+        # 保持所配置的worker数量
         self.manage_workers()
+        # 进入主循环，主要是处理来自子进程的信号
         while True:
             try:
                 self.reap_workers()
+                # 取出待处理信号队列中最早的信号，进行处理
                 sig = self.SIG_QUEUE.pop(0) if len(self.SIG_QUEUE) else None
                 if sig is None:
                     self.sleep()
@@ -176,6 +178,7 @@ class Arbiter(object):
                     self.log.error("Unhandled signal: %s", signame)
                     continue
                 self.log.info("Handling signal: %s", signame)
+                # 进入对应信号的处理函数
                 handler()  
                 self.wakeup()
             except StopIteration:
@@ -293,6 +296,8 @@ class Arbiter(object):
         A readable PIPE means a signal occurred.
         """
         try:
+            # 当产生子进程的待处理信号时，会调用wake_up方法，向self.PIPE管道写入数据
+            # 从而唤醒阻塞的select，进入下一次循环
             ready = select.select([self.PIPE[0]], [], [], 1.0)
             if not ready[0]:
                 return
@@ -402,6 +407,7 @@ class Arbiter(object):
         """
         try:
             while True:
+                # 等待任意子进程退出
                 wpid, status = os.waitpid(-1, os.WNOHANG)
                 if not wpid:
                     break
@@ -414,6 +420,7 @@ class Arbiter(object):
                     if exitcode == self.WORKER_BOOT_ERROR:
                         reason = "Worker failed to boot."
                         raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+                    # 从当前worker列表中移除僵尸进程
                     worker = self.WORKERS.pop(wpid, None)
                     if not worker:
                         continue
@@ -427,6 +434,7 @@ class Arbiter(object):
         Maintain the number of workers by spawning or killing
         as required.
         """
+        # 如果当前实际的worker数量小于配置的worker数，重新生成新的子进程
         if len(self.WORKERS.keys()) < self.num_workers:
             self.spawn_workers()
 
@@ -443,11 +451,13 @@ class Arbiter(object):
                                     self.cfg, self.log)
         self.cfg.pre_fork(self, worker)
         pid = os.fork()
+        # 父进程，直接return
         if pid != 0:
             self.WORKERS[pid] = worker
             return pid
 
         # Process Child
+        # 子进程，初始化相关参数，处理来自client的请求，主要逻辑在方法init_process
         worker_pid = os.getpid()
         try:
             util._setproctitle("worker [%s]" % self.proc_name)
@@ -463,6 +473,7 @@ class Arbiter(object):
                 sys.exit(self.WORKER_BOOT_ERROR)
             sys.exit(-1)
         finally:
+            # 记录子进程的退出
             self.log.info("Worker exiting (pid: %s)", worker_pid)
             try:
                 worker.tmp.close()
