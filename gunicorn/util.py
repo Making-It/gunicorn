@@ -73,7 +73,7 @@ def load_class(uri, default="sync", section="gunicorn.workers"):
         except ValueError:
             dist = entry_str
             name = default
-
+        # pkg_resources模块加载具体的worker模块（sync,gevent,eventlet等）
         return pkg_resources.load_entry_point(dist, section, name)
     else:
         components = uri.split('.')

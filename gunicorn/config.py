@@ -72,6 +72,7 @@ class Config(object):
     @property
     def worker_class(self):
         uri = self.settings['worker_class'].get()
+        # 加载worker_class实例
         worker_class = util.load_class(uri)
         if hasattr(worker_class, "setup"):
             worker_class.setup()

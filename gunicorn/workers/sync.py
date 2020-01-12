@@ -31,8 +31,10 @@ class SyncWorker(base.Worker):
             # workers to come give us some love.
             try:
                 client, addr = self.socket.accept()
+                # 将处理请求的socket设置为阻塞，一次只处理一个请求
                 client.setblocking(1)
                 util.close_on_exec(client)
+                # 开始处理请求
                 self.handle(client, addr)
 
                 # Keep processing clients until no one is waiting. This

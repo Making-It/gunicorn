@@ -104,10 +104,12 @@ class Application(object):
     def run(self):
         if self.cfg.spew:
             debug.spew()
+        # 将当前进程变成守护进程
         if self.cfg.daemon:
             util.daemonize()
         else:
             try:
+                # 创建一个进程组，进程组id为当前pid
                 os.setpgrp()
             except OSError, e:
                 if e[0] != errno.EPERM:

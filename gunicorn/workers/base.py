@@ -96,7 +96,7 @@ class Worker(object):
         self.log.close_on_exec()
 
         self.init_signals()
-        
+        # python框架中的app，如Flask: app = Flask(__name__)
         self.wsgi = self.app.wsgi()
         
         # Enter main run loop

@@ -94,6 +94,7 @@ class Arbiter(object):
         self.debug = self.cfg.debug
         self.timeout = self.cfg.timeout
         self.proc_name = self.cfg.proc_name
+        # 根据配置的worker参数，加载对应的worker_class模块
         self.worker_class = self.cfg.worker_class
         
         if self.cfg.debug:
