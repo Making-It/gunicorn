@@ -26,6 +26,7 @@ class Application(object):
         self.cfg = None
         self.callable = None
         self.logger = None
+        # 加载配置参数
         self.do_load_config()
 
     def do_load_config(self):
@@ -35,19 +36,24 @@ class Application(object):
             sys.stderr.write("\nError: %s\n" % str(e))
             sys.stderr.flush()
             sys.exit(1)
-  
+
+    # 加载命令行或者配置文件的参数
     def load_config(self):
         # init configuration
         self.cfg = Config(self.usage)
         
         # parse console args
+        # 初始化参数解析器
         parser = self.cfg.parser()
+        # 解析出命令行参数或者配置文件参数
         opts, args = parser.parse_args()
         
         # optional settings from apps
+        # 子类重写init方法，以各自的方式初始化Config实例
         cfg = self.init(parser, opts, args)
         
         # Load up the any app specific configuration
+        # django和paster初始化app，init方法有返回值，cfg不为None
         if cfg and cfg is not None:
             for k, v in cfg.items():
                 self.cfg.set(k.lower(), v)

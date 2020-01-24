@@ -65,6 +65,7 @@ class Config(object):
         def sorter(k):
             return (self.settings[k].section, self.settings[k].order)
         keys.sort(key=sorter)
+        # 遍历配置字典settings，将配置的所有选项加入解析器
         for k in keys:
             self.settings[k].add_option(parser)
         return parser
@@ -154,6 +155,7 @@ class Setting(object):
             self.set(self.default)    
         
     def add_option(self, parser):
+        # self.cli为命令行选项，例如-k,--worker-class
         if not self.cli:
             return
         args = tuple(self.cli)
