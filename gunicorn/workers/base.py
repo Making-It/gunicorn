@@ -98,9 +98,10 @@ class Worker(object):
         self.init_signals()
         # python框架中的app，如Flask: app = Flask(__name__)
         self.wsgi = self.app.wsgi()
-        
+
         # Enter main run loop
         self.booted = True
+        # 处理client请求的主要逻辑
         self.run()
 
     def init_signals(self):

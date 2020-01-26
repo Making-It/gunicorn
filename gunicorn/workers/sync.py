@@ -23,13 +23,15 @@ class SyncWorker(base.Worker):
         self.socket.setblocking(0)
 
         while self.alive:
+            # 向master进程发送心跳
             self.notify()
-            
+
             # Accept a connection. If we get an error telling us
             # that no connection is waiting we fall down to the
             # select which is where we'll wait for a bit for new
             # workers to come give us some love.
             try:
+                # client代表监听产生的新套接字对象，addr代表客户端的地址信息
                 client, addr = self.socket.accept()
                 # 将处理请求的socket设置为阻塞，一次只处理一个请求
                 client.setblocking(1)
@@ -68,7 +70,9 @@ class SyncWorker(base.Worker):
     
     def handle(self, client, addr):
         try:
+            # http数据解析
             parser = http.RequestParser(client)
+            # 获取请求数据
             req = parser.next()
             self.handle_request(req, client, addr)
         except StopIteration:
@@ -98,11 +102,15 @@ class SyncWorker(base.Worker):
             if self.nr >= self.max_requests:
                 self.log.info("Autorestarting worker after current request.")
                 self.alive = False
+            # wsgi服务器处理请求
+            # 其中environ中包含请求的数据，resp.start_response方法发送http响应的header
+            # respiter是http相应的body
             respiter = self.wsgi(environ, resp.start_response)
             try:
                 if isinstance(respiter, environ['wsgi.file_wrapper']):
                     resp.write_file(respiter)
                 else:
+                    # 将body响应写入socket缓冲区
                     for item in respiter:
                         resp.write(item)
                 resp.close()

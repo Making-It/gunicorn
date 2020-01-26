@@ -104,6 +104,7 @@ class Application(object):
             debug.spew()
         
     def wsgi(self):
+        # 加载web应用
         if self.callable is None:
             self.callable = self.load()
         return self.callable
