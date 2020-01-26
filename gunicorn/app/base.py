@@ -46,6 +46,7 @@ class Application(object):
         # 初始化参数解析器
         parser = self.cfg.parser()
         # 解析出命令行参数或者配置文件参数
+        # opts代表解析出来的参数值，args代表命令行的位置参数，一般位于命令行参数之后
         opts, args = parser.parse_args()
         
         # optional settings from apps

@@ -16,8 +16,10 @@ class WSGIApplication(Application):
             parser.error("No application module specified.")
 
         self.cfg.set("default_proc_name", args[0])
+        # 获取命令行第一个位置参数，一般是web_app，如module:app
         self.app_uri = args[0]
 
+        # 将当前进程的工作加入sys.path（python搜索路径）
         sys.path.insert(0, os.getcwd())
 
     def load(self):
